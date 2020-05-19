@@ -42,19 +42,16 @@ func denyDebugger(_ value: Int) -> Bool {
 
 #if arch(arm64)
 func testCase() {
-    typealias functionType = @convention(thin) (Int)->(Bool)
+    typealias FunctionType = @convention(thin) (Int)->Bool
+
+    let func_denyDebugger: FunctionType = denyDebugger    // `: FunctionType` is must
+    let func_addr = unsafeBitCast(func_denyDebugger, to: UnsafeMutableRawPointer.self)
      
-        func getSwiftFunctionAddr(_ function: @escaping functionType) -> UnsafeMutableRawPointer {
-            return unsafeBitCast(function, to: UnsafeMutableRawPointer.self)
-        }
-    
-        let func_addr = getSwiftFunctionAddr(denyDebugger)
-    
-        if let original_denyDebugger = IOSSecuritySuite.denyMSHookFunction(func_addr) {
-            NSLog("DenyDebugger Success 🚀🚀")
-            _ = unsafeBitCast(original_denyDebugger, to: functionType.self)(4)
-        } else {
-            _ = unsafeBitCast(func_addr, to: functionType.self)(4)
-        }
+    if let original_denyDebugger = IOSSecuritySuite.denyMSHookFunction(func_addr) {
+        NSLog("DenyMSHookFunction Success 🚀🚀🚀")
+        _ = unsafeBitCast(original_denyDebugger, to: FunctionType.self)(996)
+    } else {
+        _ = denyDebugger(996)
+    }
 }
 #endif
